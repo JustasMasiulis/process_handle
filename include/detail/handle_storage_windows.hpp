@@ -14,6 +14,7 @@ namespace jm { namespace detail {
     #undef NOMINMAX 
 #endif
 
+    using pid_t           = int;
     using native_handle_t = HANDLE;
 
     class handle_storage
@@ -21,7 +22,7 @@ namespace jm { namespace detail {
         using rp_handle = typename std::remove_pointer<HANDLE>::type;
         std::shared_ptr<rp_handle> _handle;
 
-        static void handle_deleter(HANDLE handle) noexcept
+        static void handle_deleter(native_handle_t handle) noexcept
         {
             if (handle)
                 CloseHandle(handle);
@@ -36,14 +37,14 @@ namespace jm { namespace detail {
             : _handle(handle, handle_deleter)
         {}
 
-        explicit handle_storage(int pid)
+        explicit handle_storage(pid_t pid)
             : _handle(OpenProcess(PROCESS_ALL_ACCESS, 0, static_cast<unsigned long>(pid)))
         {
             if (_handle.get() == nullptr)
                 throw std::system_error(std::error_code(static_cast<int>(GetLastError()), std::system_category()), "OpenProcess() failed");
         }
 
-        explicit handle_storage(int pid, std::error_code& ec)
+        explicit handle_storage(pid_t pid, std::error_code& ec)
             : _handle(OpenProcess(PROCESS_ALL_ACCESS, 0, static_cast<unsigned long>(pid)))
         {
             if (_handle.get() == nullptr)
@@ -81,8 +82,7 @@ namespace jm { namespace detail {
 
         const native_handle_t& native() const noexcept { return _handle.get(); }
 
-        int pid() const noexcept { return GetProcessId(_handle.get()); }
-
+        pid_t pid() const noexcept { return static_cast<int>(GetProcessId(_handle.get())); }
     }; // handle_storage
 
 } // namespace

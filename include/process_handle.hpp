@@ -10,6 +10,7 @@
 
 namespace jm {
 
+    using pid_t           = detail::pid_t;
     using native_handle_t = detail::native_handle_t;
 
     class process_handle
@@ -26,19 +27,21 @@ namespace jm {
         explicit process_handle() = default;
 
         /// \brief Opens a handle to process of given id
-        explicit process_handle(int process_id)
+        explicit process_handle(pid_t process_id)
             : _storage(process_id) 
         {}
 
         /// \brief Opens a handle to process of given id
-        explicit process_handle(int process_id, std::error_code& ec)
+        explicit process_handle(pid_t process_id, std::error_code& ec)
             : _storage(process_id, ec)
         {}
 
+#ifndef JM_PROCESS_HANDLE_LINUX // on linux handle == pid
         /// \brief Adopts an existing handle
-        process_handle(native_handle_t handle)
+        explicit process_handle(native_handle_t handle)
             : _storage(handle)
         {}
+#endif
 
         process_handle(const process_handle&);
         process_handle& operator= (const process_handle&);
@@ -52,7 +55,7 @@ namespace jm {
             return *this;
         }
 
-        int pid() const noexcept { return _storage.pid(); }
+        pid_t pid() const noexcept { return _storage.pid(); }
 
         operator const native_handle_t&() const noexcept
         {
