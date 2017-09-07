@@ -17,16 +17,16 @@ namespace jm { namespace detail {
         ::mach_port_t _handle;
 
     public:
-        explicit handle_storage()
+        explicit handle_storage() noexcept
             : _handle(::mach_task_self())
         {}
 
-        explicit handle_storage(native_handle_t handle)
+        explicit handle_storage(native_handle_t handle) noexcept
             : _handle(handle) {}
 
         explicit handle_storage(pid_t pid)
         {
-            const auto kr = task_for_pid(mach_task_self(), pid, &_handle);
+            const auto kr = ::task_for_pid(::mach_task_self(), pid, &_handle);
             if (kr != KERN_SUCCESS) {
                 // Not sure what it is - was integral but documented as pointer
                 _handle = (::mach_port_t)(0); 
@@ -37,7 +37,7 @@ namespace jm { namespace detail {
 
         explicit handle_storage(pid_t pid, std::error_code& ec)
         {
-            const auto kr = task_for_pid(mach_task_self(), pid, &_handle);
+            const auto kr = ::task_for_pid(::mach_task_self(), pid, &_handle);
             if (kr != KERN_SUCCESS) {
                 // Not sure what it is - was integral but documented as pointer
                 _handle = (::mach_port_t)(0);
@@ -79,6 +79,6 @@ namespace jm { namespace detail {
         pid_t pid() const noexcept { return _handle; }
     }; // handle_storage
 
-} // namespace
+}} // namespace jm::detail
 
 #endif // include guard

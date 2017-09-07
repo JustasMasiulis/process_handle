@@ -45,7 +45,7 @@ namespace jm { namespace detail {
         }
 
         explicit handle_storage(pid_t pid, std::error_code& ec)
-            : _handle(OpenProcess(PROCESS_ALL_ACCESS, 0, static_cast<unsigned long>(pid)))
+            : _handle(OpenProcess(PROCESS_ALL_ACCESS, 0, static_cast<DWORD>(pid)))
         {
             if (_handle.get() == nullptr)
                 ec = std::error_code(static_cast<int>(GetLastError()), std::system_category());
@@ -85,6 +85,6 @@ namespace jm { namespace detail {
         pid_t pid() const noexcept { return static_cast<int>(GetProcessId(_handle.get())); }
     }; // handle_storage
 
-} // namespace
+}} // namespace jm::detail
 
 #endif // include guard

@@ -2,10 +2,13 @@
 #define JM_PROCESS_HANDLE_HPP
 
 #include "detail/config.hpp"
+
 #if defined(JM_PROCESS_HANDLE_WINDOWS)
     #include "detail/handle_storage_windows.hpp"
 #elif defined(JM_PROCESS_HANDLE_LINUX)
+    #include "detail/handle_storage_linux.hpp"
 #elif defined(JM_PROCESS_HANDLE_APPLE)
+    #include "detail/handle_storage_apple.hpp"
 #endif
 
 namespace jm {
@@ -32,7 +35,7 @@ namespace jm {
         explicit process_handle(pid_t process_id)
             : _storage(process_id) {}
 
-        /// \brief Opens a handle to process of given id
+        /// \brief Opens a handle to process of given id, sets an error code on failure
         explicit process_handle(pid_t process_id, std::error_code& ec)
             : _storage(process_id, ec) {}
 

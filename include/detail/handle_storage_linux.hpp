@@ -16,14 +16,11 @@ namespace jm { namespace detail {
         native_handle_t _handle;
 
     public:
-        explicit handle_storage() 
+        explicit handle_storage() noexcept
             : _handle(::getpid()) {}
 
-        explicit handle_storage(native_handle_t handle)
+        explicit handle_storage(native_handle_t handle) noexcept
             : _handle(handle) {}
-
-        explicit handle_storage(int pid)
-            : _handle(pid) {}
 
         handle_storage(const handle_storage& other) noexcept
             : _handle(other._handle) {}
@@ -63,6 +60,6 @@ namespace jm { namespace detail {
         int pid() const noexcept { return _handle; }
     }; // handle_storage
 
-} // namespace
+}} // namespace jm::detail
 
 #endif // include guard
