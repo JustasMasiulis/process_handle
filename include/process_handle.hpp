@@ -1,3 +1,19 @@
+/*
+* Copyright 2017 Justas Masiulis
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
 #ifndef JM_PROCESS_HANDLE_HPP
 #define JM_PROCESS_HANDLE_HPP
 
@@ -21,9 +37,6 @@ namespace jm {
         detail::handle_storage _storage;
 
     protected:
-        void invalidate_handle() noexcept { _storage.invalidate(); }
-
-        bool handle_valid() const noexcept { return _storage.valid(); }
 
         ~process_handle() noexcept {}
 
@@ -69,12 +82,16 @@ namespace jm {
             return *this;
         }
 
-        pid_t pid() const noexcept { return _storage.pid(); }
 
-        operator const native_handle_t&() const noexcept
-        {
-            return _storage.native();
-        }
+        native_handle_t native() const noexcept { return _storage.native(); }
+
+        void reset() noexcept { _storage.invalidate(); }
+
+        pid_t owner_id() const noexcept { return _storage.pid(); }
+
+        operator const native_handle_t&() const noexcept { return _storage.native(); }
+
+        explicit operator bool() const noexcept { return _storage.valid(); }
     };
 
 } // namespace
