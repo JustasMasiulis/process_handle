@@ -22,12 +22,19 @@
 
 namespace jm { namespace detail {
 
-#if defined(JM_PROCESS_HANDLE_CUSTOM_WINDOWS_INCLUDE)
-    JM_PROCESS_HANDLE_CUSTOM_WINDOWS_INCLUDE;
+#ifdef JM_PH_CUSTOM_WINDOWS_INCLUDE
+    #include JM_PH_CUSTOM_WINDOWS_INCLUDE
+    #ifdef JM_PH_POST_WINDOWS_INCLUDE
+        JM_PH_POST_WINDOWS_INCLUDE
+    #endif
 #else
-    #define NOMINMAX
-    #include <Windows.h>
-    #undef NOMINMAX 
+    #ifndef NOMINMAX
+        #define NOMINMAX
+        #include <Windows.h>
+        #undef NOMINMAX
+    #else
+        #include <Windows.h>
+    #endif
 #endif
 
     using pid_t           = int;
@@ -35,8 +42,7 @@ namespace jm { namespace detail {
 
     class handle_storage
     {
-        using rp_handle = typename std::remove_pointer<HANDLE>::type;
-        std::shared_ptr<rp_handle> _handle;
+        std::shared_ptr<void> _handle;
 
         static void handle_deleter(native_handle_t handle) noexcept
         {
@@ -54,14 +60,14 @@ namespace jm { namespace detail {
         {}
 
         explicit handle_storage(pid_t pid)
-            : _handle(OpenProcess(PROCESS_ALL_ACCESS, 0, static_cast<unsigned long>(pid)))
+            : handle_storage(OpenProcess(PROCESS_ALL_ACCESS, 0, static_cast<unsigned long>(pid)))
         {
             if (_handle.get() == nullptr)
                 throw std::system_error(std::error_code(static_cast<int>(GetLastError()), std::system_category()), "OpenProcess() failed");
         }
 
         explicit handle_storage(pid_t pid, std::error_code& ec)
-            : _handle(OpenProcess(PROCESS_ALL_ACCESS, 0, static_cast<DWORD>(pid)))
+            : handle_storage(OpenProcess(PROCESS_ALL_ACCESS, 0, static_cast<unsigned long>(pid)))
         {
             if (_handle.get() == nullptr)
                 ec = std::error_code(static_cast<int>(GetLastError()), std::system_category());
@@ -87,7 +93,7 @@ namespace jm { namespace detail {
 
         handle_storage& operator= (native_handle_t handle)
         {
-            _handle.reset(handle);
+            _handle.reset(handle, handle_deleter);
             return *this;
         }
 
@@ -96,7 +102,7 @@ namespace jm { namespace detail {
 
         void invalidate() noexcept { _handle.reset(); }
 
-        const native_handle_t& native() const noexcept { return _handle.get(); }
+        native_handle_t native() const noexcept { return _handle.get(); }
 
         pid_t pid() const noexcept { return static_cast<int>(GetProcessId(_handle.get())); }
     }; // handle_storage

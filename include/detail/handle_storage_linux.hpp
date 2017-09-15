@@ -71,7 +71,7 @@ namespace jm { namespace detail {
 
         void invalidate() noexcept { _handle = -1; }
 
-        const native_handle_t& native() const noexcept { return _handle; }
+        native_handle_t native() const noexcept { return _handle; }
 
         int pid() const noexcept { return _handle; }
     }; // handle_storage

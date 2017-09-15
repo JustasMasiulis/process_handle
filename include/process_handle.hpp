@@ -32,51 +32,45 @@ namespace jm {
     using pid_t           = detail::pid_t;
     using native_handle_t = detail::native_handle_t;
 
-    class process_handle
-    {
+    class process_handle {
         detail::handle_storage _storage;
-
-    protected:
-
-        ~process_handle() noexcept {}
 
     public:
         /// \brief Default constructed process_handle is treated as our own process
         explicit process_handle() = default;
 
+        ~process_handle() noexcept = default;
+
         /// \brief Opens a handle to process of given id
         explicit process_handle(pid_t process_id)
-            : _storage(process_id) {}
+                : _storage(process_id) {}
 
         /// \brief Opens a handle to process of given id, sets an error code on failure
-        explicit process_handle(pid_t process_id, std::error_code& ec)
-            : _storage(process_id, ec) {}
+        explicit process_handle(pid_t process_id, std::error_code &ec)
+                : _storage(process_id, ec) {}
 
 #ifndef JM_PROCESS_HANDLE_LINUX // on linux handle == pid
+
         /// \brief Adopts an existing handle
         explicit process_handle(native_handle_t handle)
-            : _storage(handle) {}
+                : _storage(handle) {}
+
 #endif
 
-        process_handle(const process_handle& other) noexcept
-            : _storage(other._storage) {}
+        process_handle(const process_handle &other) noexcept = default;
 
-        process_handle& operator= (const process_handle& other) noexcept
-        {
-            _storage = other._storage;
-            return *this;
-        }
+        process_handle &operator=(const process_handle &other) noexcept = default;
 
-        process_handle(process_handle&& other) noexcept
-            : _storage(std::move(other._storage)) {}
+        process_handle(process_handle &&other) noexcept
+                : _storage(std::move(other._storage)) {}
 
-        process_handle& operator= (process_handle&& other) noexcept
+        process_handle &operator=(process_handle &&other) noexcept
         {
             _storage = std::move(other._storage);
             return *this;
         }
 
-        process_handle& operator= (native_handle_t handle)
+        process_handle &operator=(native_handle_t handle)
         {
             _storage = handle;
             return *this;
@@ -89,7 +83,7 @@ namespace jm {
 
         pid_t owner_id() const noexcept { return _storage.pid(); }
 
-        operator const native_handle_t&() const noexcept { return _storage.native(); }
+        operator native_handle_t() const noexcept { return native(); }
 
         explicit operator bool() const noexcept { return _storage.valid(); }
     };
