@@ -35,6 +35,9 @@ namespace jm { namespace detail {
         explicit handle_storage() noexcept
             : _handle(::getpid()) {}
 
+        explicit handle_storage(native_handle_t handle, std::error_code&)
+            : _handle(handle) {}
+
         explicit handle_storage(native_handle_t handle) noexcept
             : _handle(handle) {}
 
