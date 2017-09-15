@@ -1,4 +1,4 @@
-# process_handle [![Build Status](https://travis-ci.org/JustasMasiulis/process_handle.svg?branch=master)](https://travis-ci.org/JustasMasiulis/process_handle)
+# process_handle [![Build Status](https://travis-ci.org/JustasMasiulis/process_handle.svg?branch=master)](https://travis-ci.org/JustasMasiulis/process_handle) [![Build status](https://ci.appveyor.com/api/projects/status/3osunqdm82hkg3is?svg=true)](https://ci.appveyor.com/project/JustasMasiulis/process-handle)
 A cross platform wrapper around system native handles that allows copying and RAII based leak freedom.
 
 ## installation
