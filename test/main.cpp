@@ -6,7 +6,8 @@ TEST_CASE("all the tests")
 {
     jm::process_handle h;
     REQUIRE_NOTHROW(h.owner_id());
-    INFO("current process id is " << h.owner_id());
+    INFO("current process id: " << h.owner_id()
+        << "\n native handle: " << h.native());
 
     SECTION("operator bool")
     {

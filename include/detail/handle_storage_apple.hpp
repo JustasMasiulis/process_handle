@@ -86,7 +86,7 @@ namespace jm { namespace detail {
         }
 
 
-        bool valid() const noexcept { return _handle == (::mach_port_t)(0); }
+        bool valid() const noexcept { return _handle != (::mach_port_t)(0); }
 
         void invalidate() noexcept { _handle = (::mach_port_t)(0); }
 
