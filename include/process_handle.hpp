@@ -77,14 +77,20 @@ namespace jm {
         }
 
 
+        /// \brief Returns the native platform specific handle
         native_handle_t native() const noexcept { return _storage.native(); }
 
+        /// \brief Invalidates handle stored in current object
+        /// \note On windows handles are reference counted and may not be closed upon call to this function
         void reset() noexcept { _storage.invalidate(); }
 
+        /// \brief The id of process that we have the handle to
         pid_t owner_id() const noexcept { return _storage.pid(); }
 
+        /// \brief Implicit conversion to native handle
         operator native_handle_t() const noexcept { return native(); }
 
+        /// \brief Check whether the handle is valid
         explicit operator bool() const noexcept { return _storage.valid(); }
     };
 

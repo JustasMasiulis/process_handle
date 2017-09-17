@@ -10,7 +10,7 @@ TEST_CASE("all the tests")
 
     SECTION("operator bool")
     {
-        REQUIRE(h);
+        REQUIRE(static_cast<bool>(h));
     }
 
     SECTION("operator native_handle_t")
