@@ -23,11 +23,11 @@
 namespace jm { namespace detail {
 
     extern "C" {
-        __declspec(dllimport) int __stdcall CloseHandle(void *handle);
-        __declspec(dllimport) void *
-        __stdcall OpenProcess(unsigned long desired_access, int inherit_handle, unsigned long process_id);
-        __declspec(dllimport) unsigned long __stdcall GetCurrentProcessId();
-        __declspec(dllimport) unsigned long __stdcall GetProcessId(void *handle);
+    __declspec(dllimport) int __stdcall CloseHandle(void* handle);
+    __declspec(dllimport) void*
+    __stdcall OpenProcess(unsigned long desired_access, int inherit_handle, unsigned long process_id);
+    __declspec(dllimport) unsigned long __stdcall GetCurrentProcessId();
+    __declspec(dllimport) unsigned long __stdcall GetProcessId(void* handle);
     }
 
     constexpr unsigned long SYNCHRONIZE_              = 0x00100000;
@@ -61,32 +61,32 @@ namespace jm { namespace detail {
                                         , "OpenProcess() failed");
         }
 
-        explicit handle_storage(pid_t pid, std::error_code &ec)
+        explicit handle_storage(pid_t pid, std::error_code& ec)
                 : handle_storage(OpenProcess(PROCESS_ALL_ACCESS_, 0, static_cast<unsigned long>(pid)))
         {
             if (_handle.get() == nullptr)
                 ec = std::error_code(static_cast<int>(GetLastError()), std::system_category());
         }
 
-        handle_storage(const handle_storage &other) noexcept
+        handle_storage(const handle_storage& other) noexcept
                 : _handle(other._handle) {}
 
-        handle_storage &operator=(const handle_storage &other) noexcept
+        handle_storage& operator=(const handle_storage& other) noexcept
         {
             _handle = other._handle;
             return *this;
         }
 
-        handle_storage(handle_storage &&other) noexcept
+        handle_storage(handle_storage&& other) noexcept
                 : _handle(std::move(other._handle)) {}
 
-        handle_storage &operator=(handle_storage &&other) noexcept
+        handle_storage& operator=(handle_storage&& other) noexcept
         {
             _handle = std::move(other._handle);
             return *this;
         }
 
-        handle_storage &operator=(native_handle_t handle)
+        handle_storage& operator=(native_handle_t handle)
         {
             _handle.reset(handle, handle_deleter);
             return *this;

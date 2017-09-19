@@ -27,43 +27,42 @@ namespace jm { namespace detail {
     using native_handle_t = pid_t;
 
 
-    class handle_storage
-    {
+    class handle_storage {
         native_handle_t _handle;
 
     public:
         explicit handle_storage() noexcept
-            : _handle(::getpid()) {}
+                : _handle(::getpid()) {}
 
         explicit handle_storage(native_handle_t handle, std::error_code&)
-            : _handle(handle) {}
+                : _handle(handle) {}
 
         explicit handle_storage(native_handle_t handle) noexcept
-            : _handle(handle) {}
+                : _handle(handle) {}
 
         handle_storage(const handle_storage& other) noexcept
-            : _handle(other._handle) {}
+                : _handle(other._handle) {}
 
-        handle_storage& operator= (const handle_storage& other) noexcept
+        handle_storage& operator=(const handle_storage& other) noexcept
         {
             _handle = other._handle;
             return *this;
         }
 
         handle_storage(handle_storage&& other) noexcept
-            : _handle(other._handle) 
+                : _handle(other._handle)
         {
             other.invalidate();
         }
 
-        handle_storage& operator= (handle_storage&& other) noexcept
+        handle_storage& operator=(handle_storage&& other) noexcept
         {
             _handle = other._handle;
             other.invalidate();
             return *this;
         }
 
-        handle_storage& operator= (native_handle_t handle)
+        handle_storage& operator=(native_handle_t handle)
         {
             _handle = handle;
             return *this;

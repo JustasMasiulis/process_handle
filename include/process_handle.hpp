@@ -17,15 +17,15 @@
 #ifndef JM_PROCESS_HANDLE_HPP
 #define JM_PROCESS_HANDLE_HPP
 
-#include "detail/config.hpp"
-
-#if defined(JM_PROCESS_HANDLE_WINDOWS)
-    #include "detail/handle_storage_windows.hpp"
-#elif defined(JM_PROCESS_HANDLE_LINUX)
-    #include "detail/handle_storage_linux.hpp"
-#elif defined(JM_PROCESS_HANDLE_APPLE)
-    #include "detail/handle_storage_apple.hpp"
-#endif
+#if defined(_WIN32)
+    #include "process_handle/windows_storage.hpp"
+#elif defined(__linux__)
+    #include "process_handle/linux_storage.hpp"
+#elif defined(__APPLE__)
+    #include "process_handle/osx_storage.hpp"
+#else
+    #error unknown operating system
+#endif // defined(_WIN32)
 
 namespace jm {
 
@@ -46,10 +46,10 @@ namespace jm {
                 : _storage(process_id) {}
 
         /// \brief Opens a handle to process of given id, sets an error code on failure
-        explicit process_handle(pid_t process_id, std::error_code &ec)
+        explicit process_handle(pid_t process_id, std::error_code& ec)
                 : _storage(process_id, ec) {}
 
-#ifndef JM_PROCESS_HANDLE_LINUX // on linux handle == pid
+#ifndef __linux__ // on linux handle == pid
 
         /// \brief Adopts an existing handle
         explicit process_handle(native_handle_t handle)
@@ -57,20 +57,20 @@ namespace jm {
 
 #endif
 
-        process_handle(const process_handle &other) noexcept = default;
+        process_handle(const process_handle& other) noexcept = default;
 
-        process_handle &operator=(const process_handle &other) noexcept = default;
+        process_handle& operator=(const process_handle& other) noexcept = default;
 
-        process_handle(process_handle &&other) noexcept
+        process_handle(process_handle&& other) noexcept
                 : _storage(std::move(other._storage)) {}
 
-        process_handle &operator=(process_handle &&other) noexcept
+        process_handle& operator=(process_handle&& other) noexcept
         {
             _storage = std::move(other._storage);
             return *this;
         }
 
-        process_handle &operator=(native_handle_t handle)
+        process_handle& operator=(native_handle_t handle)
         {
             _storage = handle;
             return *this;
@@ -88,7 +88,7 @@ namespace jm {
         pid_t owner_id() const noexcept { return _storage.pid(); }
 
         /// \brief Implicit conversion to native handle
-        operator native_handle_t() const noexcept { return native(); }
+        explicit operator native_handle_t() const noexcept { return native(); }
 
         /// \brief Check whether the handle is valid
         explicit operator bool() const noexcept { return _storage.valid(); }
