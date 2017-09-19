@@ -22,26 +22,22 @@
 
 namespace jm { namespace detail {
 
-#ifdef JM_PH_CUSTOM_WINDOWS_INCLUDE
-    #include JM_PH_CUSTOM_WINDOWS_INCLUDE
-    #ifdef JM_PH_POST_WINDOWS_INCLUDE
-        JM_PH_POST_WINDOWS_INCLUDE
-    #endif
-#else
-    #ifndef NOMINMAX
-        #define NOMINMAX
-        #include <Windows.h>
-        #undef NOMINMAX
-    #else
-        #include <Windows.h>
-    #endif
-#endif
+    extern "C" {
+        __declspec(dllimport) int __stdcall CloseHandle(void *handle);
+        __declspec(dllimport) void *
+        __stdcall OpenProcess(unsigned long desired_access, int inherit_handle, unsigned long process_id);
+        __declspec(dllimport) unsigned long __stdcall GetCurrentProcessId();
+        __declspec(dllimport) unsigned long __stdcall GetProcessId(void *handle);
+    }
+
+    constexpr unsigned long SYNCHRONIZE_              = 0x00100000;
+    constexpr unsigned long STANDARD_RIGHTS_REQUIRED_ = 0x000F0000;
+    constexpr unsigned long PROCESS_ALL_ACCESS_       = (STANDARD_RIGHTS_REQUIRED_ | SYNCHRONIZE_ | 0xFFF);
 
     using pid_t           = int;
-    using native_handle_t = HANDLE;
+    using native_handle_t = void*;
 
-    class handle_storage
-    {
+    class handle_storage {
         std::shared_ptr<void> _handle;
 
         static void handle_deleter(native_handle_t handle) noexcept
@@ -51,47 +47,46 @@ namespace jm { namespace detail {
         }
 
     public:
-        explicit handle_storage() 
-            : handle_storage(static_cast<int>(GetCurrentProcessId()))
-        {}
+        explicit handle_storage()
+                : handle_storage(static_cast<int>(GetCurrentProcessId())) {}
 
         explicit handle_storage(native_handle_t handle)
-            : _handle(handle, handle_deleter)
-        {}
+                : _handle(handle, handle_deleter) {}
 
         explicit handle_storage(pid_t pid)
-            : handle_storage(OpenProcess(PROCESS_ALL_ACCESS, 0, static_cast<unsigned long>(pid)))
+                : handle_storage(OpenProcess(PROCESS_ALL_ACCESS_, 0, static_cast<unsigned long>(pid)))
         {
             if (_handle.get() == nullptr)
-                throw std::system_error(std::error_code(static_cast<int>(GetLastError()), std::system_category()), "OpenProcess() failed");
+                throw std::system_error(std::error_code(static_cast<int>(GetLastError()), std::system_category())
+                                        , "OpenProcess() failed");
         }
 
-        explicit handle_storage(pid_t pid, std::error_code& ec)
-            : handle_storage(OpenProcess(PROCESS_ALL_ACCESS, 0, static_cast<unsigned long>(pid)))
+        explicit handle_storage(pid_t pid, std::error_code &ec)
+                : handle_storage(OpenProcess(PROCESS_ALL_ACCESS_, 0, static_cast<unsigned long>(pid)))
         {
             if (_handle.get() == nullptr)
                 ec = std::error_code(static_cast<int>(GetLastError()), std::system_category());
         }
 
-        handle_storage(const handle_storage& other) noexcept
-            : _handle(other._handle) {}
+        handle_storage(const handle_storage &other) noexcept
+                : _handle(other._handle) {}
 
-        handle_storage& operator= (const handle_storage& other) noexcept
+        handle_storage &operator=(const handle_storage &other) noexcept
         {
             _handle = other._handle;
             return *this;
         }
 
-        handle_storage(handle_storage&& other) noexcept
-            : _handle(std::move(other._handle)) {}
+        handle_storage(handle_storage &&other) noexcept
+                : _handle(std::move(other._handle)) {}
 
-        handle_storage& operator= (handle_storage&& other) noexcept
+        handle_storage &operator=(handle_storage &&other) noexcept
         {
             _handle = std::move(other._handle);
             return *this;
         }
 
-        handle_storage& operator= (native_handle_t handle)
+        handle_storage &operator=(native_handle_t handle)
         {
             _handle.reset(handle, handle_deleter);
             return *this;
