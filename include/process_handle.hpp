@@ -90,7 +90,7 @@ namespace jm {
         void reset(native_handle_t native_handle) noexcept { _storage.reset(native_handle); }
 
         /// \brief The id of process that we have the handle to.
-        pid_t owner_id() const noexcept(noexcept(_storage.pid)) { return _storage.pid(); }
+        pid_t owner_id() const noexcept(noexcept(_storage.pid())) { return _storage.pid(); }
 
         /// \brief The id of process that we have the handle to.
         pid_t owner_id(std::error_code& ec) const noexcept { return _storage.pid(ec); }
