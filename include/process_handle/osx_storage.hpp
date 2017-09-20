@@ -32,6 +32,9 @@ namespace jm { namespace detail {
         native_handle_t _handle;
 
     public:
+        constexpr static bool constructors_can_fail      = true;
+        constexpr static bool native_assignment_can_fail = false;
+
         explicit handle_storage() noexcept
                 : _handle(::mach_task_self()) {}
 
@@ -78,10 +81,11 @@ namespace jm { namespace detail {
             return *this;
         }
 
-
         bool valid() const noexcept { return static_cast<bool>(_handle); }
 
-        void invalidate() noexcept { _handle = static_cast<native_handle_t>(0); }
+        void reset() noexcept { _handle = static_cast<native_handle_t>(0); }
+
+        void reset(native_handle_t new_handle) noexcept { _handle = new_handle; }
 
         native_handle_t native() const noexcept { return _handle; }
 

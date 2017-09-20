@@ -40,18 +40,23 @@ namespace jm { namespace detail {
     class handle_storage {
         std::shared_ptr<void> _handle;
 
-        static void handle_deleter(native_handle_t handle) noexcept
-        {
-            if (handle)
-                CloseHandle(handle);
-        }
+        struct handle_deleter_t {
+            inline void operator()(native_handle_t handle) noexcept
+            {
+                if(handle)
+                    CloseHandle(handle);
+            }
+        };
 
     public:
+        constexpr static bool constructors_can_fail      = true;
+        constexpr static bool native_assignment_can_fail = true;
+
         explicit handle_storage()
                 : handle_storage(static_cast<int>(GetCurrentProcessId())) {}
 
         explicit handle_storage(native_handle_t handle)
-                : _handle(handle, handle_deleter) {}
+                : _handle(handle, handle_deleter_t{}) {}
 
         explicit handle_storage(pid_t pid)
                 : handle_storage(OpenProcess(PROCESS_ALL_ACCESS_, 0, static_cast<unsigned long>(pid)))
@@ -88,14 +93,15 @@ namespace jm { namespace detail {
 
         handle_storage& operator=(native_handle_t handle)
         {
-            _handle.reset(handle, handle_deleter);
+            _handle.reset(handle, handle_deleter_t{});
             return *this;
         }
 
-
         bool valid() const noexcept { return _handle.get() != nullptr; }
 
-        void invalidate() noexcept { _handle.reset(); }
+        void reset() noexcept { _handle.reset(); }
+
+        void reset(native_handle_t new_handle) noexcept { _handle.reset(new_handle, handle_deleter_t{}); }
 
         native_handle_t native() const noexcept { return _handle.get(); }
 

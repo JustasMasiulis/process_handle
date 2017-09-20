@@ -14,18 +14,18 @@ TEST_CASE("all the tests")
         REQUIRE(static_cast<bool>(h));
     }
 
-    SECTION("operator native_handle_t")
+    SECTION("reset")
     {
-        const auto native = static_cast<jm::native_handle_t>(h);
-        REQUIRE(native == h.native());
+        REQUIRE_NOTHROW(h.reset());
+        jm::process_handle handle;
+        handle.reset(h.native());
+        REQUIRE(handle.native() == h.native());
     }
-
-    REQUIRE_NOTHROW(h.reset());
 
     SECTION("assignment")
     {
         jm::process_handle other;
-        auto native = static_cast<jm::native_handle_t>(other);
+        auto native = other.native();
 
         REQUIRE(native == other.native());
 
@@ -39,7 +39,7 @@ TEST_CASE("all the tests")
     SECTION("construction")
     {
         jm::process_handle other;
-        auto native = static_cast<jm::native_handle_t>(other);
+        auto native = other.native();
         jm::process_handle new_h(other);
         jm::process_handle new_h2(std::move(other));
         jm::process_handle new_h3(native);

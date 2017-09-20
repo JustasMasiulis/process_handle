@@ -14,9 +14,9 @@ It is safe to inherit from process_handle because it has protected destructor.
 
 jm::process_handle h;
 h.owner_id(); // will be our own process id
-h.native(); // returns the OS specific native handle
-// also defines implicit conversion operator to native handle type
-jm::native_handle_t native_handle = h; 
-if(h) // conversion operator to bool
+auto native_handle = h.native(); // returns the OS specific native handle
+if(h) { // conversion operator to bool
 	h.reset(); // invalidates the handle stored in h
+	h.reset(native_handle); // or replaces it with a new one
+}
 ```

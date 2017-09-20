@@ -26,15 +26,17 @@ namespace jm { namespace detail {
     using pid_t           = ::pid_t;
     using native_handle_t = pid_t;
 
-
     class handle_storage {
         native_handle_t _handle;
 
     public:
+        constexpr static bool constructors_can_fail      = false;
+        constexpr static bool native_assignment_can_fail = false;
+
         explicit handle_storage() noexcept
                 : _handle(::getpid()) {}
 
-        explicit handle_storage(native_handle_t handle, std::error_code&)
+        explicit handle_storage(native_handle_t handle, std::error_code&) noexcept
                 : _handle(handle) {}
 
         explicit handle_storage(native_handle_t handle) noexcept
@@ -62,14 +64,17 @@ namespace jm { namespace detail {
             return *this;
         }
 
-        handle_storage& operator=(native_handle_t handle)
+        handle_storage& operator=(native_handle_t handle) noexcept
         {
             _handle = handle;
             return *this;
         }
 
-
         bool valid() const noexcept { return _handle != -1; }
+
+        void reset() noexcept { _handle = -1; }
+
+        void reset(native_handle_t new_handle) noexcept { _handle = new_handle; }
 
         void invalidate() noexcept { _handle = -1; }
 
