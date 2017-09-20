@@ -38,6 +38,7 @@ TEST_CASE("all the tests")
 
     SECTION("construction")
     {
+        std::error_code ec;
         jm::process_handle other;
         auto native = other.native();
         jm::process_handle new_h(other);
@@ -47,6 +48,18 @@ TEST_CASE("all the tests")
         REQUIRE(native == new_h.native());
         REQUIRE(native == new_h2.native());
         REQUIRE(native == new_h3.native());
+
+        REQUIRE(new_h.owner_id() == h.owner_id());
+        REQUIRE(new_h.owner_id() == new_h.owner_id(ec));
+        REQUIRE(!ec);
+
+#ifndef __APPLE__ // these wont work on apple because task_for_pid needs permissions
+        jm::process_handle new_h4(new_h.owner_id());
+        jm::process_handle new_h5(new_h.owner_id(), ec);
+        REQUIRE(new_h4.owner_id() == new_h.owner_id());
+        REQUIRE(static_cast<bool>(new_h5));
+        REQUIRE(new_h3.owner_id(ec) == new_h.owner_id());
+#endif
     }
 
 }

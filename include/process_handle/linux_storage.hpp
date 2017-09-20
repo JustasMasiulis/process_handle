@@ -30,9 +30,6 @@ namespace jm { namespace detail {
         native_handle_t _handle;
 
     public:
-        constexpr static bool constructors_can_fail      = false;
-        constexpr static bool native_assignment_can_fail = false;
-
         explicit handle_storage() noexcept
                 : _handle(::getpid()) {}
 
@@ -42,25 +39,19 @@ namespace jm { namespace detail {
         explicit handle_storage(native_handle_t handle) noexcept
                 : _handle(handle) {}
 
-        handle_storage(const handle_storage& other) noexcept
-                : _handle(other._handle) {}
-
-        handle_storage& operator=(const handle_storage& other) noexcept
-        {
-            _handle = other._handle;
-            return *this;
-        }
+        handle_storage(const handle_storage& other) noexcept = default;
+        handle_storage& operator=(const handle_storage& other) noexcept = default;
 
         handle_storage(handle_storage&& other) noexcept
                 : _handle(other._handle)
         {
-            other.invalidate();
+            other.reset();
         }
 
         handle_storage& operator=(handle_storage&& other) noexcept
         {
             _handle = other._handle;
-            other.invalidate();
+            other.reset();
             return *this;
         }
 
@@ -76,11 +67,11 @@ namespace jm { namespace detail {
 
         void reset(native_handle_t new_handle) noexcept { _handle = new_handle; }
 
-        void invalidate() noexcept { _handle = -1; }
-
         native_handle_t native() const noexcept { return _handle; }
 
-        int pid() const noexcept { return _handle; }
+        pid_t pid() const noexcept { return _handle; }
+
+        inline pid_t pid(std::error_code&) const noexcept { return _handle; }
     }; // handle_storage
 
 }} // namespace jm::detail

@@ -32,9 +32,6 @@ namespace jm { namespace detail {
         native_handle_t _handle;
 
     public:
-        constexpr static bool constructors_can_fail      = true;
-        constexpr static bool native_assignment_can_fail = false;
-
         explicit handle_storage() noexcept
                 : _handle(::mach_task_self()) {}
 
@@ -52,26 +49,24 @@ namespace jm { namespace detail {
         {
             const auto kr = ::task_for_pid(::mach_task_self(), pid, &_handle);
             if (kr != KERN_SUCCESS) {
-                invalidate();
+                reset();
                 ec = std::error_code(kr, std::system_category());
             }
         }
 
-        handle_storage(const handle_storage& other) noexcept
-                : _handle(other._handle) {}
-
-        handle_storage& operator=(const handle_storage& other) noexcept
-        {
-            _handle = other._handle;
-            return *this;
-        }
+        handle_storage(const handle_storage& other) noexcept = default;
+        handle_storage& operator=(const handle_storage& other) noexcept = default;
 
         handle_storage(handle_storage&& other) noexcept
-                : _handle(other._handle) {}
+                : _handle(other._handle)
+        {
+            other.reset();
+        }
 
         handle_storage& operator=(handle_storage&& other) noexcept
         {
             _handle = other._handle;
+            other.reset();
             return *this;
         }
 
@@ -89,7 +84,25 @@ namespace jm { namespace detail {
 
         native_handle_t native() const noexcept { return _handle; }
 
-        pid_t pid() const noexcept { return _handle; }
+        pid_t pid() const
+        {
+            pid_t      pid;
+            const auto kr = ::pid_for_task(_handle, &pid);
+            if (kr != KERN_SUCCESS)
+                throw std::system_error(std::error_code(kr, std::system_category()), "pid_for_task() failed");
+
+            return pid;
+        }
+
+        pid_t pid(std::error_code& ec) const noexcept
+        {
+            pid_t      pid;
+            const auto kr = ::pid_for_task(_handle, &pid);
+            if (kr != KERN_SUCCESS)
+                ec = ec = std::error_code(kr, std::system_category());
+
+            return pid;
+        }
     }; // handle_storage
 
 }} // namespace jm::detail

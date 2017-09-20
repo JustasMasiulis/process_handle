@@ -43,15 +43,12 @@ namespace jm { namespace detail {
         struct handle_deleter_t {
             inline void operator()(native_handle_t handle) noexcept
             {
-                if(handle)
+                if (handle)
                     CloseHandle(handle);
             }
         };
 
     public:
-        constexpr static bool constructors_can_fail      = true;
-        constexpr static bool native_assignment_can_fail = true;
-
         explicit handle_storage()
                 : handle_storage(static_cast<int>(GetCurrentProcessId())) {}
 
@@ -73,23 +70,11 @@ namespace jm { namespace detail {
                 ec = std::error_code(static_cast<int>(GetLastError()), std::system_category());
         }
 
-        handle_storage(const handle_storage& other) noexcept
-                : _handle(other._handle) {}
+        handle_storage(const handle_storage& other) noexcept = default;
+        handle_storage& operator=(const handle_storage& other) noexcept = default;
 
-        handle_storage& operator=(const handle_storage& other) noexcept
-        {
-            _handle = other._handle;
-            return *this;
-        }
-
-        handle_storage(handle_storage&& other) noexcept
-                : _handle(std::move(other._handle)) {}
-
-        handle_storage& operator=(handle_storage&& other) noexcept
-        {
-            _handle = std::move(other._handle);
-            return *this;
-        }
+        handle_storage(handle_storage&& other) noexcept = default;
+        handle_storage& operator=(handle_storage&& other) noexcept = default;
 
         handle_storage& operator=(native_handle_t handle)
         {
@@ -97,7 +82,7 @@ namespace jm { namespace detail {
             return *this;
         }
 
-        bool valid() const noexcept { return _handle.get() != nullptr; }
+        bool valid() const noexcept { return static_cast<bool>(_handle); }
 
         void reset() noexcept { _handle.reset(); }
 
@@ -106,6 +91,8 @@ namespace jm { namespace detail {
         native_handle_t native() const noexcept { return _handle.get(); }
 
         pid_t pid() const noexcept { return static_cast<int>(GetProcessId(_handle.get())); }
+
+        inline pid_t pid(std::error_code&) const noexcept { return pid(); }
     }; // handle_storage
 
 }} // namespace jm::detail

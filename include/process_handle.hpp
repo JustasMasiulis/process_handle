@@ -39,41 +39,39 @@ namespace jm {
 
     public:
         /// \brief Default constructed process_handle is treated as our own process
-        explicit process_handle() = default;
+        explicit process_handle() noexcept(noexcept(detail::handle_storage())) = default;
 
         ~process_handle() noexcept = default;
 
         /// \brief Opens a handle to process of given id
-        explicit process_handle(pid_t process_id) noexcept(!detail::handle_storage::constructors_can_fail)
+        explicit process_handle(pid_t process_id) noexcept(noexcept(detail::handle_storage(process_id)))
                 : _storage(process_id) {}
 
         /// \brief Opens a handle to process of given id, sets an error code on failure
         explicit process_handle(pid_t process_id
-                                , std::error_code& ec) noexcept(!detail::handle_storage::constructors_can_fail)
+                                , std::error_code& ec) noexcept(noexcept(detail::handle_storage(process_id, ec)))
                 : _storage(process_id, ec) {}
 
 #ifndef __linux__ // on linux handle == pid
 
         /// \brief Adopts an existing handle
-        explicit process_handle(native_handle_t handle) noexcept(!detail::handle_storage::constructors_can_fail)
+        explicit process_handle(native_handle_t handle) noexcept(noexcept(detail::handle_storage(handle)))
                 : _storage(handle) {}
 
 #endif
 
         /// \brief Copy constructible.
         process_handle(const process_handle& other) noexcept = default;
-
         /// \brief Copy assignable.
         process_handle& operator=(const process_handle& other) noexcept = default;
 
         /// \brief Move constructible
         process_handle(process_handle&& other) noexcept = default;
-
         /// \brief Move assignable.
         process_handle& operator=(process_handle&& other) noexcept = default;
 
         // \brief Assigns a new native handle
-        process_handle& operator=(native_handle_t handle) noexcept(!detail::handle_storage::native_assignment_can_fail)
+        process_handle& operator=(native_handle_t handle) noexcept(noexcept(_storage.operator=(handle)))
         {
             _storage = handle;
             return *this;
@@ -92,7 +90,10 @@ namespace jm {
         void reset(native_handle_t native_handle) noexcept { _storage.reset(native_handle); }
 
         /// \brief The id of process that we have the handle to.
-        pid_t owner_id() const noexcept { return _storage.pid(); }
+        pid_t owner_id() const noexcept(noexcept(_storage.pid)) { return _storage.pid(); }
+
+        /// \brief The id of process that we have the handle to.
+        pid_t owner_id(std::error_code& ec) const noexcept { return _storage.pid(ec); }
 
         /// \brief Check whether the handle is valid.
         explicit operator bool() const noexcept { return _storage.valid(); }
