@@ -8,7 +8,6 @@ the library is headers only so copying it into your project directory and includ
 Default constructed process_handle is a handle to our own process.
 It is also possible to construct process_handle using a process id
 or an already existing handle.
-It is safe to inherit from process_handle because it has protected destructor.
 ```c++
 #include "process_handle.hpp"
 

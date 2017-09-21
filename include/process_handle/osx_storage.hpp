@@ -70,12 +70,6 @@ namespace jm { namespace detail {
             return *this;
         }
 
-        handle_storage& operator=(native_handle_t handle) noexcept
-        {
-            _handle = handle;
-            return *this;
-        }
-
         bool valid() const noexcept { return static_cast<bool>(_handle); }
 
         void reset() noexcept { _handle = static_cast<native_handle_t>(0); }

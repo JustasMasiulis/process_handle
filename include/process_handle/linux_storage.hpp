@@ -55,12 +55,6 @@ namespace jm { namespace detail {
             return *this;
         }
 
-        handle_storage& operator=(native_handle_t handle) noexcept
-        {
-            _handle = handle;
-            return *this;
-        }
-
         bool valid() const noexcept { return _handle != -1; }
 
         void reset() noexcept { _handle = -1; }

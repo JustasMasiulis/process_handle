@@ -76,12 +76,6 @@ namespace jm { namespace detail {
         handle_storage(handle_storage&& other) noexcept = default;
         handle_storage& operator=(handle_storage&& other) noexcept = default;
 
-        handle_storage& operator=(native_handle_t handle)
-        {
-            _handle.reset(handle, handle_deleter_t{});
-            return *this;
-        }
-
         bool valid() const noexcept { return static_cast<bool>(_handle); }
 
         void reset() noexcept { _handle.reset(); }

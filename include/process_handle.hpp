@@ -18,9 +18,7 @@
 #define JM_PROCESS_HANDLE_HPP
 
 #if defined(_WIN32)
-
     #include "process_handle/windows_storage.hpp"
-
 #elif defined(__linux__)
     #include "process_handle/linux_storage.hpp"
 #elif defined(__APPLE__)
@@ -38,23 +36,26 @@ namespace jm {
         detail::handle_storage _storage;
 
     public:
-        /// \brief Default constructed process_handle is treated as our own process
-        explicit process_handle() noexcept(noexcept(detail::handle_storage())) = default;
+        /// \brief Default constructed process_handle is treated as our own process.
+        explicit process_handle() noexcept(noexcept(detail::handle_storage()))
+                : _storage() {} // MSVC has internal error if I simply = default it
 
+        /// \brief Destroys the handle.
+        /// \note On windows handle is reference counted and may not be closed upon destruction.
         ~process_handle() noexcept = default;
 
-        /// \brief Opens a handle to process of given id
+        /// \brief Opens a handle to process of given id.
         explicit process_handle(pid_t process_id) noexcept(noexcept(detail::handle_storage(process_id)))
                 : _storage(process_id) {}
 
-        /// \brief Opens a handle to process of given id, sets an error code on failure
-        explicit process_handle(pid_t process_id
-                                , std::error_code& ec) noexcept(noexcept(detail::handle_storage(process_id, ec)))
+        /// \brief Opens a handle to process of given id, sets an error code on failure.
+        explicit process_handle(pid_t process_id, std::error_code& ec) noexcept(noexcept(detail::handle_storage(
+                process_id, ec)))
                 : _storage(process_id, ec) {}
 
 #ifndef __linux__ // on linux handle == pid
 
-        /// \brief Adopts an existing handle
+        /// \brief Adopts an existing handle.
         explicit process_handle(native_handle_t handle) noexcept(noexcept(detail::handle_storage(handle)))
                 : _storage(handle) {}
 
@@ -65,22 +66,15 @@ namespace jm {
         /// \brief Copy assignable.
         process_handle& operator=(const process_handle& other) noexcept = default;
 
-        /// \brief Move constructible
+        /// \brief Move constructible.
         process_handle(process_handle&& other) noexcept = default;
         /// \brief Move assignable.
         process_handle& operator=(process_handle&& other) noexcept = default;
 
-        // \brief Assigns a new native handle
-        process_handle& operator=(native_handle_t handle) noexcept(noexcept(_storage.operator=(handle)))
-        {
-            _storage = handle;
-            return *this;
-        }
-
         /// \brief Returns the native platform specific handle.
         native_handle_t native() const noexcept { return _storage.native(); }
 
-        /// \brief Invalidates handle stored in current object
+        /// \brief Invalidates handle stored in current object.
         /// \note On windows handles are reference counted and may not be closed upon call to this function.
         void reset(std::nullptr_t p = nullptr) noexcept { _storage.reset(); }
 
@@ -97,8 +91,8 @@ namespace jm {
 
         /// \brief Check whether the handle is valid.
         explicit operator bool() const noexcept { return _storage.valid(); }
-    };
+    }; // process_handle
 
-} // namespace
+} // namespace jm
 
 #endif // include guard
