@@ -28,6 +28,7 @@ namespace jm { namespace detail {
     __stdcall OpenProcess(unsigned long desired_access, int inherit_handle, unsigned long process_id);
     __declspec(dllimport) unsigned long __stdcall GetCurrentProcessId();
     __declspec(dllimport) unsigned long __stdcall GetProcessId(void* handle);
+    __declspec(dllimport) unsigned long __stdcall GetLastError();
     }
 
     constexpr unsigned long SYNCHRONIZE_              = 0x00100000;
